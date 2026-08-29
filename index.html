@@ -49,13 +49,33 @@
      works in both themes because nothing here is colour-dependent. */
   [data-card] { opacity:0; transform:translateY(20px) scale(.985); filter:blur(6px); will-change:opacity,transform,filter; }
   [data-card].is-in { opacity:1; transform:translateY(0) scale(1); filter:blur(0); }
-  [data-card], [data-card].is-in { transition:opacity .62s cubic-bezier(.2,.7,.2,1), transform .62s cubic-bezier(.2,.7,.2,1), filter .62s cubic-bezier(.2,.7,.2,1); }
+  [data-card], [data-card].is-in { transition:opacity .62s cubic-bezier(.2,.7,.2,1), transform .5s cubic-bezier(.2,.7,.2,1), filter .62s cubic-bezier(.2,.7,.2,1), box-shadow .45s ease, border-color .45s ease; }
+  /* a resting card gets a little lift and warmth on hover — same easing family as the reveal.
+     cards set border/box-shadow inline, so the hover values need !important to win. */
+  [data-card].is-in:hover { transform:translateY(-4px) scale(1.006); box-shadow:0 30px 60px -26px rgba(20,12,4,.55) !important; border-color:color-mix(in srgb, var(--rose) 40%, var(--hair)) !important; }
   /* chips ripple in behind their card */
   [data-chip] { opacity:0; transform:translateY(8px) scale(.94); }
   [data-chip].is-in { opacity:1; transform:translateY(0) scale(1); }
-  [data-chip], [data-chip].is-in { transition:opacity .4s ease, transform .4s cubic-bezier(.2,.7,.2,1); }
+  [data-chip], [data-chip].is-in { transition:opacity .4s ease, transform .3s cubic-bezier(.2,.7,.2,1), border-color .25s ease, color .25s ease, background-color .25s ease; }
+  /* chips set color/border/background inline, so the hover state needs !important to win over them */
+  [data-chip]:hover { transform:translateY(-2px) scale(1.07); border-color:var(--rose) !important; color:var(--rose) !important; background:color-mix(in srgb, var(--rose) 8%, var(--paper)) !important; }
+  /* stop markers double as way-point buttons: hoverable, and the one the avatar is passing pings softly.
+     the dot's centring transform is set inline, so the hover scale needs !important to stack on top of it. */
+  [data-stop-dot] { cursor:pointer; }
+  [data-stop-dot]:hover, [data-stop-dot]:focus-visible { transform:translate(-50%,-50%) scale(1.2) !important; outline:none; }
+  [data-stop-dot].is-near { animation:dp-dotpulse 1.8s ease-in-out infinite; }
+  @keyframes dp-dotpulse {
+    0%,100% { box-shadow:0 6px 16px -8px rgba(20,12,4,.5), 0 0 0 0 color-mix(in srgb, var(--rose) 55%, transparent); }
+    60% { box-shadow:0 6px 16px -8px rgba(20,12,4,.5), 0 0 0 8px color-mix(in srgb, var(--rose) 0%, transparent); }
+  }
+  /* sun/moon toggle grows slightly on hover so it reads as a button, not a decoration.
+     its inline all:unset counts as an inline transform:unset, so this needs !important. */
+  [aria-label="Toggle day/night"]:hover { transform:scale(1.12) !important; }
+  [aria-label="Toggle day/night"]:active { transform:scale(.9) !important; }
   @media (prefers-reduced-motion: reduce) {
     [data-card], [data-chip] { opacity:1 !important; transform:none !important; filter:none !important; transition:none !important; }
+    [data-card].is-in:hover { transform:none !important; }
+    [data-stop-dot].is-near { animation:none; }
   }
   /* Theme cross-fade — opacity/transform included so section reveals stay smooth
      (the old rule's shorthand !important was killing every fade-in transition). */
@@ -76,6 +96,11 @@
 
   <!-- stars (night) -->
   <div aria-hidden="true" style="position:absolute; top:0; left:0; right:0; height:24%; pointer-events:none; opacity:var(--stars); animation:dp-twinkle 6s ease-in-out infinite; background-image:radial-gradient(1.5px 1.5px at 14% 12%, #f1ede4 45%, transparent),radial-gradient(1.4px 1.4px at 30% 26%, #f1ede4 45%, transparent),radial-gradient(1.5px 1.5px at 52% 10%, #f1ede4 45%, transparent),radial-gradient(1.4px 1.4px at 68% 22%, #f1ede4 45%, transparent),radial-gradient(1.5px 1.5px at 84% 14%, #f1ede4 45%, transparent),radial-gradient(1.4px 1.4px at 22% 40%, #f1ede4 45%, transparent),radial-gradient(1.4px 1.4px at 76% 42%, #f1ede4 45%, transparent);"></div>
+
+  <!-- journey progress — a thin strip of road that fills in as you travel down the page -->
+  <div aria-hidden="true" style="position:fixed; top:0; left:0; right:0; height:3px; background:color-mix(in srgb, var(--hair) 70%, transparent); z-index:6; pointer-events:none;">
+    <div ref="{{ progressBar }}" style="height:100%; width:0%; background:var(--rose); box-shadow:0 0 8px 0 color-mix(in srgb, var(--rose) 55%, transparent);"></div>
+  </div>
 
   <!-- sun / moon toggle -->
   <button aria-label="Toggle day/night" onClick="{{ toggleTheme }}" style="all:unset; cursor:pointer; position:absolute; left:82%; top:4%; width:1px; height:1px; z-index:5;">
@@ -112,6 +137,11 @@
       <p style="margin:0 0 14px; font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.04em; color:var(--slate);"><span style="color:var(--rose);">//</span> selected work</p>
       <div style="display:flex; flex-direction:column; gap:11px;">
         <article data-card="" style="background:var(--paper); border:1px solid var(--hair); border-radius:14px; padding:16px 20px; box-shadow:0 20px 44px -30px rgba(20,12,4,.45);">
+          <h3 style="margin:0 0 5px; font-family:'Space Grotesk',sans-serif; font-size:17px; font-weight:600; color:var(--ink);">Sustainable City Management</h3>
+          <p style="margin:0 0 10px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.02em; color:var(--rose);">React · Django · Celery · Azure AKS · GitHub Actions</p>
+          <p style="margin:0; font-family:'Space Grotesk',sans-serif; font-size:13.5px; line-height:1.65; color:var(--slate);">Smart city platform for Dublin mobility, built by a team of ten. I built the mobility provider dashboard, wired an LSTM bike forecast into the Django backend through Celery, set up both CI pipelines, and ran the production deployment on Azure Kubernetes.</p>
+        </article>
+        <article data-card="" style="background:var(--paper); border:1px solid var(--hair); border-radius:14px; padding:16px 20px; box-shadow:0 20px 44px -30px rgba(20,12,4,.45);">
           <h3 style="margin:0 0 5px; font-family:'Space Grotesk',sans-serif; font-size:17px; font-weight:600; color:var(--ink);">os-llm — Inference Platform</h3>
           <p style="margin:0 0 10px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.02em; color:var(--rose);">Go · vLLM · gRPC · Kubernetes · in progress</p>
           <p style="margin:0; font-family:'Space Grotesk',sans-serif; font-size:13.5px; line-height:1.65; color:var(--slate);">Kubernetes-based LLM serving with a Go control plane and OpenAI-compatible APIs, so existing tooling can call self-hosted models without changes. vLLM for inference, Prometheus and Grafana for monitoring.</p>
@@ -119,17 +149,12 @@
         <article data-card="" style="background:var(--paper); border:1px solid var(--hair); border-radius:14px; padding:16px 20px; box-shadow:0 20px 44px -30px rgba(20,12,4,.45);">
           <h3 style="margin:0 0 5px; font-family:'Space Grotesk',sans-serif; font-size:17px; font-weight:600; color:var(--ink);">CAPTCHA Recognition, Workstation to Edge</h3>
           <p style="margin:0 0 10px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.02em; color:var(--rose);">TensorFlow · TFLite · Raspberry Pi · CNN</p>
-          <p style="margin:0; font-family:'Space Grotesk',sans-serif; font-size:13px; line-height:1.6; color:var(--slate);">A multi-head CNN trained on 300,000 synthetic images, converted to TensorFlow Lite and run CPU-only on a 32-bit ARM board at about 9 images per second.</p>
+          <p style="margin:0; font-family:'Space Grotesk',sans-serif; font-size:13px; line-height:1.6; color:var(--slate);">A multi-head CNN trained on 300,000 synthetic images to around 95% per-character accuracy, converted to TensorFlow Lite and run CPU-only on a 32-bit ARM board at about 9 images per second.</p>
         </article>
         <article data-card="" style="background:var(--paper); border:1px solid var(--hair); border-radius:14px; padding:16px 20px; box-shadow:0 20px 44px -30px rgba(20,12,4,.45);">
           <h3 style="margin:0 0 5px; font-family:'Space Grotesk',sans-serif; font-size:17px; font-weight:600; color:var(--ink);">Attention in Multi-Agent RL</h3>
           <p style="margin:0 0 10px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.02em; color:var(--rose);">PyTorch · MAPPO · SUMO · MSc dissertation</p>
           <p style="margin:0; font-family:'Space Grotesk',sans-serif; font-size:13.5px; line-height:1.65; color:var(--slate);">Testing whether attention helps a line of vehicles follow each other without amplifying braking. Four policies that differ only in their encoder, so the comparison measures attention on its own. <a href="writing-attention-negative-result.html" style="color:var(--rose); text-decoration:none;" style-hover="text-decoration:underline;">Written up →</a></p>
-        </article>
-        <article data-card="" style="background:var(--paper); border:1px solid var(--hair); border-radius:14px; padding:16px 20px; box-shadow:0 20px 44px -30px rgba(20,12,4,.45);">
-          <h3 style="margin:0 0 5px; font-family:'Space Grotesk',sans-serif; font-size:17px; font-weight:600; color:var(--ink);">Sustainable City Platform</h3>
-          <p style="margin:0 0 10px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.02em; color:var(--rose);">React · Django · Terraform · Azure AKS</p>
-          <p style="margin:0; font-family:'Space Grotesk',sans-serif; font-size:13.5px; line-height:1.65; color:var(--slate);">Full-stack app for city infrastructure data. Terraform-provisioned Azure, containerized to AKS, GitHub Actions running build, test and deploy.</p>
         </article>
       </div>
     </section>
@@ -215,7 +240,7 @@
   <div ref="{{ stopsHost }}" aria-hidden="true" style="position:absolute; inset:0; pointer-events:none;"></div>
 
   <!-- ===== AVATAR (rides the road) ===== -->
-  <div ref="{{ avatar }}" aria-hidden="true" style="position:absolute; left:0; top:0; width:22px; height:48px; transform:translate(-50%,-90%); will-change:left,top; z-index:3;">
+  <div ref="{{ avatar }}" aria-hidden="true" style="position:absolute; left:0; top:0; width:22px; height:48px; transform:translate(-50%,-90%); will-change:left,top; z-index:3; pointer-events:none;">
     <!-- speech bubble -->
     <div ref="{{ bubble }}" style="position:absolute; left:50%; bottom:78px; transform:translateX(-50%) scale(.5); opacity:0; background:var(--paper); color:var(--ink); padding:6px 12px; border-radius:10px; font-size:11px; font-weight:600; letter-spacing:.01em; white-space:nowrap; box-shadow:0 8px 20px -10px rgba(20,12,4,.55), inset 0 0 0 1px color-mix(in srgb, var(--whale) 22%, transparent);"><span ref="{{ bubbleText }}">Hi, I’m Jay!</span><span style="position:absolute; left:50%; bottom:-4px; width:8px; height:8px; margin-left:-4px; background:var(--paper); transform:rotate(45deg); box-shadow:2px 2px 3px -2px rgba(20,12,4,.4);"></span></div>
     <!-- scroll hint -->
@@ -260,7 +285,7 @@ class Component extends DCLogic {
     { f: 0.81,  n: '5', label: 'Writing',    say: 'drafting \u266A' },
     { f: 0.965, n: '6', label: 'Contact',    say: 'say hello!' }
   ];
-  tools = ['Python','Go','PyTorch','TensorFlow','Kubernetes','Docker','Terraform','Linux','Yocto','Jenkins','GitHub Actions','GCP (GKE)','Azure (AKS)','Prometheus','Grafana','vLLM','gRPC','MySQL','PostgreSQL','Redis'];
+  tools = ['Python','JavaScript','Go','React','Django','Flask','PyTorch','TensorFlow','Docker','Kubernetes','Terraform','Azure (AKS)','GCP (GKE)','Jenkins','GitHub Actions','Celery','Redis','PostgreSQL','MySQL','Prometheus','Grafana','Linux','Yocto','vLLM','gRPC'];
   frac = 0;
   targetFrac = 0;
   travel = 1;
@@ -430,6 +455,7 @@ class Component extends DCLogic {
       if (dd < best) { best = dd; near = i; }
     }
     this.setPersona(near);
+    this.setNearMarker(near);
     if (this.content && this.revealed) {
       const vh = window.innerHeight;
       this.content.querySelectorAll('section[data-i]').forEach(sec => {
@@ -547,8 +573,18 @@ class Component extends DCLogic {
       const m = document.createElement('div');
       m.style.cssText = `position:absolute; left:${p.x}px; top:${p.y}px; width:0; height:0;`;
       const dot = document.createElement('div');
-      dot.style.cssText = `position:absolute; left:0; top:0; transform:translate(-50%,-50%); width:24px; height:24px; border-radius:50%; background:var(--paper); border:3px solid var(--rose); box-shadow:0 6px 16px -8px rgba(20,12,4,.5); display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; color:var(--rose); font-family:'JetBrains Mono',monospace;`;
+      dot.setAttribute('data-stop-dot', '');
+      dot.setAttribute('role', 'button');
+      dot.setAttribute('tabindex', '0');
+      dot.setAttribute('aria-label', 'Jump to ' + s.label);
+      dot.style.cssText = `position:absolute; left:0; top:0; transform:translate(-50%,-50%); width:24px; height:24px; border-radius:50%; background:var(--paper); border:3px solid var(--rose); box-shadow:0 6px 16px -8px rgba(20,12,4,.5); display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; color:var(--rose); font-family:'JetBrains Mono',monospace; pointer-events:auto;`;
       dot.textContent = s.n;
+      const jump = () => {
+        const y = this.toScreen(s.f * this.L).y;
+        window.scrollTo({ top: Math.max(0, y - window.innerHeight * 0.32), behavior: 'smooth' });
+      };
+      dot.addEventListener('click', jump);
+      dot.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); jump(); } });
       const lab = document.createElement('div');
       lab.style.cssText = `position:absolute; ${rail ? 'left:18px; top:22px;' : `top:0; ${labelRight ? 'left:24px;' : 'right:24px;'} transform:translateY(-50%);`} padding:6px 12px; border-radius:9px; background:var(--paper); color:var(--ink); font-size:12px; font-weight:600; letter-spacing:.01em; white-space:nowrap; box-shadow:0 8px 20px -12px rgba(20,12,4,.5), inset 0 0 0 1px color-mix(in srgb, var(--whale) 18%, transparent);`;
       lab.textContent = s.label;
@@ -556,6 +592,21 @@ class Component extends DCLogic {
       m.appendChild(lab);
       host.appendChild(m);
     });
+  }
+
+  // pings the way-point dot the avatar is currently passing, clears the last one
+  setNearMarker(i) {
+    if (this._nearIdx === i || !this.stopsHost) return;
+    const kids = this.stopsHost.children;
+    if (this._nearIdx != null && kids[this._nearIdx]) {
+      const prev = kids[this._nearIdx].querySelector('[data-stop-dot]');
+      if (prev) prev.classList.remove('is-near');
+    }
+    this._nearIdx = i;
+    if (i >= 0 && kids[i]) {
+      const dot = kids[i].querySelector('[data-stop-dot]');
+      if (dot) dot.classList.add('is-near');
+    }
   }
 
   placeContent(pass) {
@@ -686,11 +737,12 @@ class Component extends DCLogic {
   onScroll = () => {
     // watchdog: if the RAF loop has gone quiet, restart it
     if (this.started && performance.now() - (window.__dpBeat || 0) > 800) this.ensureLive();
-    if (!this.autoDone) return;
-    if (!this.scrolled) { this.scrolled = true; this.endWave(); this.hideBubble(); this.hideHint(); }
     const se = document.scrollingElement || document.documentElement;
     const max = se.scrollHeight - se.clientHeight;
     const sf = max > 0 ? Math.min(1, Math.max(0, se.scrollTop / max)) : 0;
+    if (this.progressBar) this.progressBar.style.width = (sf * 100) + '%';
+    if (!this.autoDone) return;
+    if (!this.scrolled) { this.scrolled = true; this.endWave(); this.hideBubble(); this.hideHint(); }
     this.targetFrac = this.fGreet + sf * (1 - this.fGreet);
   };
 
@@ -801,7 +853,7 @@ class Component extends DCLogic {
       crates: (el) => { this.cratesHost = el; },
       chips: (el) => { this.chipsHost = el; },
       road: r('road'), stopsHost: r('stopsHost'), avatar: r('avatar'), content: r('content'),
-      bubble: r('bubble'), bubbleText: r('bubbleText'), hint: r('hint'),
+      bubble: r('bubble'), bubbleText: r('bubbleText'), hint: r('hint'), progressBar: r('progressBar'),
       figFlip: r('figFlip'), figBob: r('figBob'), poseWrap: r('poseWrap'),
       personaHost: r('personaHost'), notesHost: r('notesHost'),
       armF: r('armF'), armB: r('armB'), legF: r('legF'), legB: r('legB')

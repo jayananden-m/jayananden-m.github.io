@@ -14,16 +14,30 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&amp;family=Newsreader:opsz,wght@6..72,400;6..72,500&amp;family=Space+Grotesk:wght@400;500;600&amp;display=swap">
 <style>
   body { margin:0; background:#faf6f1; }
-  a { color:#b8574a; }
+  a { color:#b8574a; transition:color .2s ease; }
   a:hover { color:#9c4438; }
+  [data-arrow] { display:inline-block; transition:transform .25s cubic-bezier(.2,.7,.2,1); }
+  a:hover [data-arrow] { transform:translateX(-3px); }
+  /* reading progress — pure CSS, no JS: fills as the page scrolls. No-op (harmless 0-width strip) in browsers without scroll-driven animations. */
+  #read-progress { position:fixed; top:0; left:0; height:3px; width:100%; transform-origin:0 50%; transform:scaleX(0); background:#b8574a; box-shadow:0 0 8px 0 rgba(184,87,74,.55); z-index:20; }
+  @supports (animation-timeline: scroll()) {
+    #read-progress { animation:read-fill linear; animation-timeline: scroll(root); }
+  }
+  @keyframes read-fill { from { transform:scaleX(0); } to { transform:scaleX(1); } }
+  @media (prefers-reduced-motion: reduce) {
+    [data-arrow] { transition:none !important; }
+    #read-progress { animation:none !important; }
+  }
 </style>
 </helmet>
 
 <div style="--paper:#faf6f1;--rose:#b8574a;--ink:#3a3446;--slate:#6f6880;--hair:#e6ddd3; min-height:100vh; background:var(--paper); color:var(--ink); font-family:'Space Grotesk',sans-serif;">
 
+  <div id="read-progress" aria-hidden="true"></div>
+
   <header style="position:sticky; top:0; z-index:5; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 28px; background:color-mix(in srgb, var(--paper) 86%, transparent); backdrop-filter:blur(10px); border-bottom:1px solid var(--hair);">
     <a href="writing.html" style="display:flex; align-items:center; gap:9px; font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.03em; color:var(--slate); text-decoration:none;" style-hover="color:var(--rose);">
-      <span style="color:var(--rose);">←</span> all writing
+      <span data-arrow="" style="color:var(--rose);">←</span> all writing
     </a>
     <span style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--slate);">Jayananden M</span>
   </header>
