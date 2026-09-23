@@ -1,58 +1,202 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="./support.js"></script>
-</head>
-<body>
-<x-dc>
-<helmet>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&amp;family=Newsreader:opsz,wght@6..72,400;6..72,500&amp;family=Space+Grotesk:wght@400;500;600&amp;display=swap">
+<title>Jayananden M · Writing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Space+Grotesk:wght@400;500;600&display=swap">
 <style>
-  body { margin:0; background:#faf6f1; }
-  a { color:#b8574a; transition:color .2s ease; }
-  a:hover { color:#9c4438; }
-  [data-arrow] { display:inline-block; transition:transform .25s cubic-bezier(.2,.7,.2,1); }
-  a:hover [data-arrow] { transform:translateX(-3px); }
-  [data-row] { transition:background-color .3s ease, padding-left .3s cubic-bezier(.2,.7,.2,1); }
-  [data-row]:hover { padding-left:10px !important; }
-  [data-row] h2 { transition:color .25s ease; }
-  [data-row]:hover h2 { color:var(--rose); }
-  @media (prefers-reduced-motion: reduce) {
-    [data-arrow], [data-row], [data-row] h2 { transition:none !important; }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);
+       font-family:'Space Grotesk',sans-serif;
+       -webkit-font-smoothing:antialiased;}
+  a{color:var(--rose);text-decoration:none;transition:color .2s ease;}
+  a:hover{color:var(--rose-dark);}
+  .wrap{min-height:100vh;background:var(--paper);}
+
+  /* sticky header */
+  header{position:sticky;top:0;z-index:5;display:flex;align-items:center;
+    justify-content:space-between;gap:16px;padding:14px 28px;
+    background:color-mix(in srgb,var(--paper) 86%,transparent);
+    backdrop-filter:blur(10px);border-bottom:1px solid var(--hair);}
+  header .back{display:inline-flex;align-items:center;gap:9px;
+    font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.03em;
+    color:var(--slate);}
+  header .back:hover{color:var(--rose);}
+  header .back .arrow{display:inline-block;color:var(--rose);
+    transition:transform .25s cubic-bezier(.2,.7,.2,1);}
+  header .back:hover .arrow{transform:translateX(-3px);}
+  header .who{font-family:'JetBrains Mono',monospace;font-size:11px;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--slate);}
+
+  main{margin:0 auto;padding:72px 28px 110px;}
+  .kicker{margin:0 0 18px;font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:.06em;color:var(--slate);}
+  .kicker .sep{color:var(--rose);}
+
+  /* tags */
+  .tag-pill{display:inline-flex;align-items:center;font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:.02em;padding:3px 8px;border-radius:6px;
+    border:1px solid var(--hair);color:var(--slate);background:var(--code-bg);
+    text-decoration:none;transition:all .2s ease;line-height:1.4;white-space:nowrap;}
+  .tag-pill::before{content:"#";color:var(--rose);margin-right:2px;opacity:.7;}
+  .tag-pill:hover{border-color:var(--rose);color:var(--rose-dark);
+    background:color-mix(in srgb,var(--rose) 6%,var(--paper));}
+
+  main{max-width:840px;}
+  .kicker.big{font-size:12px;letter-spacing:.04em;}
+  h1.title{margin:0 0 16px;font-family:'Newsreader',serif;font-weight:400;
+    font-size:60px;line-height:1.02;letter-spacing:-.02em;color:var(--ink);}
+  p.intro{margin:0 0 40px;max-width:52ch;font-family:'Newsreader',serif;
+    font-size:20px;line-height:1.6;color:var(--slate);text-wrap:pretty;}
+
+  /* tag filter buttons */
+  .tag-filters{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 44px;align-items:center;}
+  .filter-btn{all:unset;display:inline-flex;align-items:center;gap:6px;
+    padding:5px 12px;border-radius:20px;border:1px solid var(--hair);
+    background:transparent;color:var(--slate);font-family:'JetBrains Mono',monospace;
+    font-size:11.5px;letter-spacing:.03em;cursor:pointer;
+    transition:all .2s cubic-bezier(.2,.7,.2,1);}
+  .filter-btn::before{content:"#";color:var(--rose);opacity:.7;}
+  .filter-btn[data-tag="all"]::before{content:"";display:none;}
+  .filter-btn .count{font-size:10px;opacity:.75;}
+  .filter-btn:hover{border-color:var(--rose);color:var(--rose);
+    background:color-mix(in srgb,var(--rose) 5%,var(--paper));}
+  .filter-btn.active{background:var(--rose);color:#fff;border-color:var(--rose);}
+  .filter-btn.active::before{color:#fff;opacity:1;}
+  .filter-btn.active .count{color:#fff;opacity:.9;}
+
+  .list{display:flex;flex-direction:column;}
+  a.row{display:block;padding:28px 0;border-top:1px solid var(--hair);
+    color:inherit;transition:background-color .3s ease,padding-left .3s cubic-bezier(.2,.7,.2,1);}
+  a.row:last-child{border-bottom:1px solid var(--hair);}
+  a.row:hover{padding-left:10px;background:color-mix(in srgb,var(--rose) 4%,transparent);}
+  a.row .meta-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px;flex-wrap:wrap;}
+  a.row .meta{margin:0;font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:.06em;color:var(--slate);}
+  a.row .row-tags{display:inline-flex;flex-wrap:wrap;gap:6px;}
+  a.row h2{margin:0 0 8px;font-family:'Newsreader',serif;font-weight:400;
+    font-size:30px;line-height:1.2;color:var(--ink);transition:color .25s ease;}
+  a.row:hover h2{color:var(--rose);}
+  a.row .dek{margin:0;max-width:56ch;font-size:15px;line-height:1.65;
+    color:var(--slate);text-wrap:pretty;}
+
+  .no-posts{display:none;padding:48px 0;text-align:center;font-family:'Space Grotesk',sans-serif;color:var(--slate);font-size:15px;}
+  .no-posts .clear-filter{display:inline-block;margin-top:12px;color:var(--rose);font-family:'JetBrains Mono',monospace;font-size:12px;cursor:pointer;}
+
+  @media (prefers-reduced-motion:reduce){
+    a.row,a.row h2,header .back .arrow,.filter-btn,.tag-pill{transition:none!important;}
+  }
+  @media (max-width:640px){
+    h1.title{font-size:42px;} main{padding:48px 22px 90px;}
+    .tag-filters{margin-bottom:32px;}
+    p.intro{margin-bottom:32px;}
   }
 </style>
-</helmet>
-
-<div style="--paper:#faf6f1;--rose:#b8574a;--ink:#3a3446;--slate:#6f6880;--hair:#e6ddd3; min-height:100vh; background:var(--paper); color:var(--ink); font-family:'Space Grotesk',sans-serif;">
-
-  <header style="position:sticky; top:0; z-index:5; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 28px; background:color-mix(in srgb, var(--paper) 86%, transparent); backdrop-filter:blur(10px); border-bottom:1px solid var(--hair);">
-    <a href="index.html" style="display:flex; align-items:center; gap:9px; font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.03em; color:var(--slate); text-decoration:none;" style-hover="color:var(--rose);">
-      <span data-arrow="" style="color:var(--rose);">←</span> back to the road
-    </a>
-    <span style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--slate);">Jayananden M · Writing</span>
+</head>
+<body>
+<div class="wrap" style="--paper:#faf6f1;--rose:#b8574a;--rose-dark:#9c4438;--ink:#3a3446;--slate:#6f6880;--hair:#e6ddd3;--code-bg:#f3ece3;">
+  <header>
+    <a class="back" href="index.html"><span class="arrow">&larr;</span> back to the road</a>
+    <span class="who">Jayananden M &middot; Writing</span>
   </header>
-
-  <main style="max-width:760px; margin:0 auto; padding:72px 28px 110px;">
-    <p style="margin:0 0 18px; font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.04em; color:var(--slate);"><span style="color:var(--rose);">//</span> writing</p>
-    <h1 style="margin:0 0 16px; font-family:'Newsreader',serif; font-weight:400; font-size:60px; line-height:1.02; letter-spacing:-.02em; color:var(--ink);">Notes from the platform</h1>
-    <p style="margin:0 0 56px; max-width:52ch; font-family:'Newsreader',serif; font-size:20px; line-height:1.6; color:var(--slate); text-wrap:pretty;">Notes on machine learning systems and the infrastructure around them.</p>
-
-    <div style="display:flex; flex-direction:column; gap:0;">
-
-      <a href="writing-attention-negative-result.html" data-row="" style="display:block; padding:28px 0; border-top:1px solid var(--hair); border-bottom:1px solid var(--hair); text-decoration:none; color:inherit;" style-hover="background:color-mix(in srgb, var(--rose) 4%, transparent);">
-        <p style="margin:0 0 10px; font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.06em; color:var(--slate);">Aug 2026 · 7 min</p>
-        <h2 style="margin:0 0 8px; font-family:'Newsreader',serif; font-weight:400; font-size:30px; line-height:1.2; color:var(--ink);">Testing whether attention helps in platoon control</h2>
-        <p style="margin:0; max-width:56ch; font-family:'Space Grotesk',sans-serif; font-size:15px; line-height:1.65; color:var(--slate); text-wrap:pretty;">I compared four encoders in a multi-agent RL setup. The attention one did not beat the plain baseline, and the reasons why were more interesting than a win would have been.</p>
+  <main>
+    <p class="kicker big"><span class="sep">//</span> writing</p>
+    <h1 class="title">Notes from the platform</h1>
+    <p class="intro">Notes on machine learning systems and the infrastructure around them.</p>
+    <div class="tag-filters" id="tag-filters" aria-label="Filter posts by tag">
+      <button class="filter-btn active" data-tag="all">all <span class="count">(3)</span></button><button class="filter-btn" data-tag="LLMs">LLMs <span class="count">(2)</span></button><button class="filter-btn" data-tag="AI">AI <span class="count">(1)</span></button><button class="filter-btn" data-tag="on-device">on-device <span class="count">(1)</span></button><button class="filter-btn" data-tag="systems">systems <span class="count">(1)</span></button><button class="filter-btn" data-tag="web">web <span class="count">(1)</span></button>
+    </div>
+    <div class="list">
+      <a class="row" href="writing-ondevice-llm-snapname.html" data-tags="on-device,LLMs">
+        <div class="meta-row">
+          <p class="meta">Sep 2026 · 4 min</p>
+          <div class="row-tags"><span class="tag-pill" data-tag="on-device">on-device</span><span class="tag-pill" data-tag="LLMs">LLMs</span></div>
+        </div>
+        <h2>OnDevice LLM (Apple Foundation Models)</h2>
+        <p class="dek">A small practical demo tool built on the on-device model behind Apple Intelligence, using Apple&#x27;s Foundation Models SDK for Python</p>
       </a>
-
+      <a class="row" href="writing-contextdata.html" data-tags="AI,LLMs">
+        <div class="meta-row">
+          <p class="meta">2026-09-19 · 10 min</p>
+          <div class="row-tags"><span class="tag-pill" data-tag="AI">AI</span><span class="tag-pill" data-tag="LLMs">LLMs</span></div>
+        </div>
+        <h2>Internal Data as Context for LLMs and Agents</h2>
+        <p class="dek"></p>
+      </a>
+      <a class="row" href="writing-nginx-beauty.html" data-tags="systems,web">
+        <div class="meta-row">
+          <p class="meta">2026-09-18 · 10 min</p>
+          <div class="row-tags"><span class="tag-pill" data-tag="systems">systems</span><span class="tag-pill" data-tag="web">web</span></div>
+        </div>
+        <h2>The Beauty of Nginx</h2>
+        <p class="dek">How an old-school proxy became the silent workhorse of the modern web.</p>
+      </a>
+    </div>
+    <div class="no-posts" id="no-posts">
+      <p>No posts tagged with this topic yet.</p>
+      <span class="clear-filter">&larr; Show all posts</span>
     </div>
   </main>
-</div>
+  <script>
+  (function() {
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const rows = document.querySelectorAll('.list a.row');
+    const emptyState = document.getElementById('no-posts');
 
-</x-dc>
+    function applyFilter(selectedTag) {
+      let visibleCount = 0;
+      rows.forEach(row => {
+        const rawTags = row.getAttribute('data-tags') || '';
+        const tags = rawTags.split(',').filter(Boolean);
+        const match = (selectedTag === 'all' || tags.includes(selectedTag));
+        row.style.display = match ? 'block' : 'none';
+        if (match) visibleCount++;
+      });
+
+      filterBtns.forEach(btn => {
+        const btnTag = btn.getAttribute('data-tag');
+        btn.classList.toggle('active', btnTag === selectedTag);
+      });
+
+      if (emptyState) {
+        emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+      }
+
+      const newUrl = selectedTag === 'all'
+        ? window.location.pathname
+        : window.location.pathname + '?tag=' + encodeURIComponent(selectedTag);
+      history.replaceState(null, '', newUrl);
+    }
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        applyFilter(this.getAttribute('data-tag'));
+      });
+    });
+
+    document.querySelectorAll('.row-tags .tag-pill').forEach(tagEl => {
+      tagEl.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const tag = this.getAttribute('data-tag');
+        if (tag) applyFilter(tag);
+      });
+    });
+
+    const clearBtn = document.querySelector('.clear-filter');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => applyFilter('all'));
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const initialTag = params.get('tag') || (window.location.hash ? window.location.hash.slice(1) : null);
+    if (initialTag && Array.from(filterBtns).some(b => b.getAttribute('data-tag') === initialTag)) {
+      applyFilter(initialTag);
+    }
+  })();
+  </script>
+</div>
 </body>
 </html>

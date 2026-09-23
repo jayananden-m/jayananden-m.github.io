@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nginx</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Space+Grotesk:wght@400;500;600&display=swap">
+<style>
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);
+       font-family:'Space Grotesk',sans-serif;
+       -webkit-font-smoothing:antialiased;}
+  a{color:var(--rose);text-decoration:none;transition:color .2s ease;}
+  a:hover{color:var(--rose-dark);}
+  .wrap{min-height:100vh;background:var(--paper);}
+
+  /* sticky header */
+  header{position:sticky;top:0;z-index:5;display:flex;align-items:center;
+    justify-content:space-between;gap:16px;padding:14px 28px;
+    background:color-mix(in srgb,var(--paper) 86%,transparent);
+    backdrop-filter:blur(10px);border-bottom:1px solid var(--hair);}
+  header .back{display:inline-flex;align-items:center;gap:9px;
+    font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.03em;
+    color:var(--slate);}
+  header .back:hover{color:var(--rose);}
+  header .back .arrow{display:inline-block;color:var(--rose);
+    transition:transform .25s cubic-bezier(.2,.7,.2,1);}
+  header .back:hover .arrow{transform:translateX(-3px);}
+  header .who{font-family:'JetBrains Mono',monospace;font-size:11px;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--slate);}
+
+  main{margin:0 auto;padding:72px 28px 110px;}
+  .kicker{margin:0 0 18px;font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:.06em;color:var(--slate);}
+  .kicker .sep{color:var(--rose);}
+
+  main{max-width:680px;}
+  h1.title{margin:0 0 24px;font-family:'Newsreader',serif;font-weight:400;
+    font-size:46px;line-height:1.1;letter-spacing:-.02em;color:var(--ink);}
+  p.lede{margin:0 0 48px;font-family:'Newsreader',serif;font-size:20px;
+    line-height:1.6;color:var(--slate);text-wrap:pretty;}
+
+  /* reading-progress bar — pure CSS, degrades to a harmless empty strip */
+  #read-progress{position:fixed;top:0;left:0;height:3px;width:100%;
+    transform-origin:0 50%;transform:scaleX(0);background:var(--rose);
+    box-shadow:0 0 8px 0 rgba(184,87,74,.55);z-index:20;}
+  @supports (animation-timeline:scroll()){
+    #read-progress{animation:read-fill linear;animation-timeline:scroll(root);}
+  }
+  @keyframes read-fill{from{transform:scaleX(0);}to{transform:scaleX(1);}}
+
+  /* ---- article body: markdown maps onto these ---- */
+  .post-body{font-size:16.5px;line-height:1.75;color:var(--ink);}
+  .post-body > *:first-child{margin-top:0;}
+  .post-body p{margin:0 0 24px;}
+  .post-body h2{margin:44px 0 18px;font-family:'Newsreader',serif;
+    font-weight:500;font-size:28px;line-height:1.25;color:var(--ink);}
+  .post-body h3{margin:36px 0 14px;font-family:'Newsreader',serif;
+    font-weight:500;font-size:22px;line-height:1.3;color:var(--ink);}
+  .post-body ul,.post-body ol{margin:0 0 24px;padding-left:1.3em;}
+  .post-body li{margin:0 0 8px;}
+  .post-body li::marker{color:var(--rose);}
+  .post-body strong{font-weight:600;color:var(--ink);}
+  .post-body blockquote{margin:0 0 24px;padding:4px 0 4px 20px;
+    border-left:3px solid var(--rose);color:var(--slate);font-style:italic;}
+  .post-body blockquote p{margin:0 0 10px;}
+  .post-body hr{border:none;border-top:1px solid var(--hair);margin:40px 0;}
+
+  /* small-print / caveat paragraph: write  {: .note}  under it in markdown */
+  .post-body .note{color:var(--slate);font-size:15px;line-height:1.65;}
+
+  /* images & diagrams (tldraw / Excalidraw exports, GIFs) */
+  .post-body figure{margin:36px 0;}
+  .post-body figure img,.post-body p img{display:block;max-width:100%;
+    height:auto;margin:0 auto;border:1px solid var(--hair);border-radius:10px;
+    background:#fff;}
+  .post-body figcaption{margin-top:12px;text-align:center;
+    font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.02em;
+    color:var(--slate);}
+
+  /* inline code + code blocks */
+  .post-body code{font-family:'JetBrains Mono',monospace;font-size:.86em;}
+  .post-body :not(pre) > code{background:var(--code-bg);
+    border:1px solid var(--hair);border-radius:5px;padding:.12em .38em;
+    color:var(--rose-dark);}
+  .post-body .codehilite{margin:0 0 24px;background:var(--code-bg);
+    border:1px solid var(--hair);border-radius:10px;overflow:auto;}
+  .post-body .codehilite pre{margin:0;padding:18px 20px;font-size:13.5px;
+    line-height:1.6;overflow:auto;}
+
+  /* tables */
+  .post-body table{width:100%;border-collapse:collapse;margin:0 0 28px;
+    font-size:14.5px;}
+  .post-body th,.post-body td{padding:9px 12px;border-bottom:1px solid var(--hair);
+    text-align:left;}
+  .post-body th{font-family:'JetBrains Mono',monospace;font-size:11px;
+    letter-spacing:.04em;text-transform:uppercase;color:var(--slate);
+    border-bottom:1.5px solid var(--hair);}
+
+  .post-footer{margin-top:56px;padding-top:28px;border-top:1px solid var(--hair);}
+  .post-footer a{font-family:'JetBrains Mono',monospace;font-size:12px;
+    letter-spacing:.03em;color:var(--rose);}
+  @media (max-width:640px){
+    h1.title{font-size:34px;} main{padding:48px 22px 90px;}
+  }
+
+pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.post-body .codehilite .hll { background-color: #ffffcc }
+.post-body .codehilite { background: #ffffff; }
+.post-body .codehilite .c { color: #888 } /* Comment */
+.post-body .codehilite .err { color: #A61717; background-color: #E3D2D2 } /* Error */
+.post-body .codehilite .k { color: #080; font-weight: bold } /* Keyword */
+.post-body .codehilite .ch { color: #888 } /* Comment.Hashbang */
+.post-body .codehilite .cm { color: #888 } /* Comment.Multiline */
+.post-body .codehilite .cp { color: #C00; font-weight: bold } /* Comment.Preproc */
+.post-body .codehilite .cpf { color: #888 } /* Comment.PreprocFile */
+.post-body .codehilite .c1 { color: #888 } /* Comment.Single */
+.post-body .codehilite .cs { color: #C00; font-weight: bold; background-color: #FFF0F0 } /* Comment.Special */
+.post-body .codehilite .gd { color: #000; background-color: #FDD } /* Generic.Deleted */
+.post-body .codehilite .ge { font-style: italic } /* Generic.Emph */
+.post-body .codehilite .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.post-body .codehilite .gr { color: #A00 } /* Generic.Error */
+.post-body .codehilite .gh { color: #333 } /* Generic.Heading */
+.post-body .codehilite .gi { color: #000; background-color: #DFD } /* Generic.Inserted */
+.post-body .codehilite .go { color: #888 } /* Generic.Output */
+.post-body .codehilite .gp { color: #555 } /* Generic.Prompt */
+.post-body .codehilite .gs { font-weight: bold } /* Generic.Strong */
+.post-body .codehilite .gu { color: #666 } /* Generic.Subheading */
+.post-body .codehilite .gt { color: #A00 } /* Generic.Traceback */
+.post-body .codehilite .kc { color: #080; font-weight: bold } /* Keyword.Constant */
+.post-body .codehilite .kd { color: #080; font-weight: bold } /* Keyword.Declaration */
+.post-body .codehilite .kn { color: #080; font-weight: bold } /* Keyword.Namespace */
+.post-body .codehilite .kp { color: #080 } /* Keyword.Pseudo */
+.post-body .codehilite .kr { color: #080; font-weight: bold } /* Keyword.Reserved */
+.post-body .codehilite .kt { color: #888; font-weight: bold } /* Keyword.Type */
+.post-body .codehilite .m { color: #00D; font-weight: bold } /* Literal.Number */
+.post-body .codehilite .s { color: #D20; background-color: #FFF0F0 } /* Literal.String */
+.post-body .codehilite .na { color: #369 } /* Name.Attribute */
+.post-body .codehilite .nb { color: #038 } /* Name.Builtin */
+.post-body .codehilite .nc { color: #B06; font-weight: bold } /* Name.Class */
+.post-body .codehilite .no { color: #036; font-weight: bold } /* Name.Constant */
+.post-body .codehilite .nd { color: #555 } /* Name.Decorator */
+.post-body .codehilite .ne { color: #B06; font-weight: bold } /* Name.Exception */
+.post-body .codehilite .nf { color: #06B; font-weight: bold } /* Name.Function */
+.post-body .codehilite .nl { color: #369; font-style: italic } /* Name.Label */
+.post-body .codehilite .nn { color: #B06; font-weight: bold } /* Name.Namespace */
+.post-body .codehilite .py { color: #369; font-weight: bold } /* Name.Property */
+.post-body .codehilite .nt { color: #B06; font-weight: bold } /* Name.Tag */
+.post-body .codehilite .nv { color: #369 } /* Name.Variable */
+.post-body .codehilite .ow { color: #080 } /* Operator.Word */
+.post-body .codehilite .w { color: #BBB } /* Text.Whitespace */
+.post-body .codehilite .mb { color: #00D; font-weight: bold } /* Literal.Number.Bin */
+.post-body .codehilite .mf { color: #00D; font-weight: bold } /* Literal.Number.Float */
+.post-body .codehilite .mh { color: #00D; font-weight: bold } /* Literal.Number.Hex */
+.post-body .codehilite .mi { color: #00D; font-weight: bold } /* Literal.Number.Integer */
+.post-body .codehilite .mo { color: #00D; font-weight: bold } /* Literal.Number.Oct */
+.post-body .codehilite .sa { color: #D20; background-color: #FFF0F0 } /* Literal.String.Affix */
+.post-body .codehilite .sb { color: #D20; background-color: #FFF0F0 } /* Literal.String.Backtick */
+.post-body .codehilite .sc { color: #D20; background-color: #FFF0F0 } /* Literal.String.Char */
+.post-body .codehilite .dl { color: #D20; background-color: #FFF0F0 } /* Literal.String.Delimiter */
+.post-body .codehilite .sd { color: #D20; background-color: #FFF0F0 } /* Literal.String.Doc */
+.post-body .codehilite .s2 { color: #D20; background-color: #FFF0F0 } /* Literal.String.Double */
+.post-body .codehilite .se { color: #04D; background-color: #FFF0F0 } /* Literal.String.Escape */
+.post-body .codehilite .sh { color: #D20; background-color: #FFF0F0 } /* Literal.String.Heredoc */
+.post-body .codehilite .si { color: #33B; background-color: #FFF0F0 } /* Literal.String.Interpol */
+.post-body .codehilite .sx { color: #2B2; background-color: #F0FFF0 } /* Literal.String.Other */
+.post-body .codehilite .sr { color: #080; background-color: #FFF0FF } /* Literal.String.Regex */
+.post-body .codehilite .s1 { color: #D20; background-color: #FFF0F0 } /* Literal.String.Single */
+.post-body .codehilite .ss { color: #A60; background-color: #FFF0F0 } /* Literal.String.Symbol */
+.post-body .codehilite .bp { color: #038 } /* Name.Builtin.Pseudo */
+.post-body .codehilite .fm { color: #06B; font-weight: bold } /* Name.Function.Magic */
+.post-body .codehilite .vc { color: #369 } /* Name.Variable.Class */
+.post-body .codehilite .vg { color: #D70 } /* Name.Variable.Global */
+.post-body .codehilite .vi { color: #33B } /* Name.Variable.Instance */
+.post-body .codehilite .vm { color: #369 } /* Name.Variable.Magic */
+.post-body .codehilite .il { color: #00D; font-weight: bold } /* Literal.Number.Integer.Long */</style>
+</head>
+<body>
+<div class="wrap" style="--paper:#faf6f1;--rose:#b8574a;--rose-dark:#9c4438;--ink:#3a3446;--slate:#6f6880;--hair:#e6ddd3;--code-bg:#f3ece3;">
+  <div id="read-progress" aria-hidden="true"></div>
+  <header>
+    <a class="back" href="writing.html"><span class="arrow">&larr;</span> all writing</a>
+    <span class="who">Jayananden M</span>
+  </header>
+  <main>
+    <p class="kicker">1 min</p>
+    <h1 class="title">Nginx</h1>
+    
+    <article class="post-body">
+      <h1>Nginx</h1>
+    </article>
+    <div class="post-footer">
+      <a href="writing.html">&larr; all writing</a>
+    </div>
+  </main>
+</div>
+</body>
+</html>
